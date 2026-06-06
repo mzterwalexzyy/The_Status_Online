@@ -1,0 +1,7 @@
+# Scratch / working files
+_*.html
+index-dark.html
+v*-*.png
+qa/
+# Office lock/temp files
+~$*

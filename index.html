@@ -1,0 +1,432 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>The Status Online — Redesign Concept</title>
+<style>
+  :root{
+    --brand:#e11d2a;
+    --ink:#0f1115;
+    --bg:#ffffff;
+    --bg-alt:#f5f6f8;
+    --card:#ffffff;
+    --text:#1a1d23;
+    --muted:#6b7280;
+    --line:#e6e8eb;
+    --rail:#0f1115;
+    --shadow:0 1px 3px rgba(0,0,0,.06),0 8px 24px rgba(0,0,0,.05);
+    --radius:14px;
+    --maxw:1180px;
+    --rail-w:46px;
+  }
+  [data-theme="dark"]{
+    --ink:#f3f4f6;--bg:#0e1014;--bg-alt:#15181d;--card:#181b21;--text:#e8eaed;
+    --muted:#9aa1ab;--line:#262a31;--rail:#000;
+    --shadow:0 1px 3px rgba(0,0,0,.5),0 8px 24px rgba(0,0,0,.4);
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:'Segoe UI',system-ui,-apple-system,Roboto,Helvetica,Arial,sans-serif;
+    background:var(--bg);color:var(--text);line-height:1.55;transition:background .25s,color .25s}
+  a{color:inherit;text-decoration:none}
+  img{display:block;width:100%;height:100%;object-fit:cover}
+  .wrap{max-width:var(--maxw);margin:0 auto;padding:0 24px}
+
+  /* ===== HOVER-REVEAL EDGE TABS (float over page, auto-hide) ===== */
+  .edge{position:fixed;top:38%;z-index:60;display:flex;align-items:stretch;
+    transition:transform .3s cubic-bezier(.22,.61,.36,1);filter:drop-shadow(0 6px 18px rgba(0,0,0,.22))}
+  .edge.left{left:0;transform:translateX(calc(-100% + 30px))}
+  .edge.right{right:0;flex-direction:row-reverse;transform:translateX(calc(100% - 30px))}
+  .edge.left:hover,.edge.right:hover{transform:translateX(0)}
+  /* the always-visible grip */
+  .grip{width:30px;background:var(--brand);color:#fff;display:flex;align-items:center;justify-content:center;
+    writing-mode:vertical-rl;text-orientation:mixed;font-size:11px;font-weight:800;letter-spacing:.18em;
+    text-transform:uppercase;cursor:default}
+  .edge.left .grip{border-radius:0 12px 12px 0}
+  .edge.right .grip{border-radius:12px 0 0 12px}
+  /* the hidden panel */
+  .panel{background:var(--rail);color:#cfd3da;padding:16px 12px;display:flex;flex-direction:column;
+    align-items:center;justify-content:center;gap:14px;min-height:170px}
+  .edge.left .panel{border-radius:0 0 12px 0}
+  .edge.right .panel{border-radius:0 0 0 12px}
+  .panel .vdate{writing-mode:vertical-rl;transform:rotate(180deg);font-size:13px;font-weight:600;
+    letter-spacing:.12em;text-transform:uppercase;white-space:nowrap;color:#e6e8eb}
+  .panel .link{writing-mode:vertical-rl;color:#cfd3da;font-size:12.5px;font-weight:700;letter-spacing:.1em;
+    padding:2px 0;transition:color .15s}
+  .panel .link:hover{color:#fff}
+  .panel .toggle{writing-mode:horizontal-tb;cursor:pointer;border:1px solid #333a44;background:transparent;
+    color:#cfd3da;width:30px;height:30px;border-radius:50%;font-size:14px;display:flex;align-items:center;justify-content:center}
+  .panel .toggle:hover{border-color:var(--brand);color:#fff}
+
+  .page{margin:0}
+
+  /* ===== HEADER (compact, professional, logo left) ===== */
+  .site-header{background:var(--bg);border-bottom:1px solid var(--line)}
+  .brand-row{display:flex;align-items:center;justify-content:space-between;gap:24px;
+    max-width:var(--maxw);margin:0 auto;padding:14px 24px}
+  .logo-img{height:56px;width:auto;display:block;transition:transform .25s ease}
+  .logo-img:hover{transform:scale(1.04)}
+  .logo-dark{display:none}
+  [data-theme="dark"] .logo-light{display:none}
+  [data-theme="dark"] .logo-dark{display:block}
+  .logo-fallback{display:flex;align-items:baseline;gap:3px;font-weight:800;letter-spacing:-1px}
+  .logo-fallback .the{font-size:13px;font-weight:600;color:var(--muted);transform:translateY(-9px)}
+  .logo-fallback .status{font-size:34px;color:var(--ink)}
+  .logo-fallback .a{color:var(--brand)}
+  .logo-fallback .online{font-size:12px;font-style:italic;color:var(--muted)}
+  .header-actions{display:flex;align-items:center;gap:12px}
+  .searchbox{display:flex;align-items:center;gap:8px;background:var(--bg-alt);border:1px solid var(--line);
+    border-radius:999px;padding:9px 16px;min-width:230px;transition:border-color .2s,box-shadow .2s}
+  .searchbox:focus-within{border-color:var(--brand);box-shadow:0 0 0 3px rgba(225,29,42,.12)}
+  .searchbox input{border:none;background:none;outline:none;font-size:14px;color:var(--text);width:100%}
+  .searchbox span{color:var(--muted);font-size:15px}
+  .subscribe{background:var(--brand);color:#fff;border:none;border-radius:999px;padding:10px 20px;
+    font-weight:700;font-size:14px;cursor:pointer;white-space:nowrap;transition:transform .15s,filter .15s}
+  .subscribe:hover{transform:translateY(-2px);filter:brightness(1.08)}
+  .iconbtn{width:42px;height:42px;border-radius:50%;border:1px solid var(--line);background:var(--bg-alt);
+    color:var(--text);font-size:17px;cursor:pointer;display:flex;align-items:center;justify-content:center;
+    transition:transform .15s,border-color .2s}
+  .iconbtn:hover{transform:translateY(-2px) rotate(12deg);border-color:var(--brand)}
+
+  /* ===== BREAKING-NEWS TICKER (dynamic) ===== */
+  .ticker{background:var(--ink);color:#e8eaed;display:flex;align-items:stretch;height:40px}
+  [data-theme="dark"] .ticker{background:#000}
+  .ticker .label{background:var(--brand);color:#fff;font-weight:800;font-size:12px;letter-spacing:.1em;
+    text-transform:uppercase;padding:0 26px 0 16px;display:flex;align-items:center;flex:0 0 auto;
+    position:relative;z-index:2;clip-path:polygon(0 0,100% 0,86% 100%,0 100%)}
+  .ticker-vp{flex:1;overflow:hidden;position:relative;display:flex;align-items:center}
+  .ticker .track{display:flex;white-space:nowrap;will-change:transform;animation:ticker 28s linear infinite}
+  .ticker-vp:hover .track{animation-play-state:paused}
+  .ticker .track a{padding:0 28px;font-size:13.5px;color:#cfd3da;position:relative}
+  .ticker .track a::after{content:"•";position:absolute;right:-4px;color:var(--brand)}
+  .ticker .track a:hover{color:#fff}
+  @keyframes ticker{0%{transform:translateX(0)}100%{transform:translateX(-50%)}}
+
+  /* ===== NAV directly under logo ===== */
+  .topbar-sticky{position:sticky;top:0;z-index:45;background:var(--bg);
+    box-shadow:0 4px 16px rgba(0,0,0,.07)}
+  [data-theme="dark"] .topbar-sticky{box-shadow:0 4px 16px rgba(0,0,0,.4)}
+  nav.main{position:relative;background:var(--brand)}
+  nav.main .bar{display:flex;align-items:center;justify-content:center;gap:2px;height:50px;
+    max-width:var(--maxw);margin:0 auto;padding:0 24px}
+  nav.main a{color:#fff;font-weight:600;font-size:14.5px;padding:8px 14px;border-radius:8px;opacity:.92;
+    transition:background .15s,opacity .15s}
+  nav.main a:hover,nav.main a.active{background:rgba(255,255,255,.18);opacity:1}
+  nav.main .search{margin-left:8px;color:#fff;opacity:.9;font-size:17px;cursor:pointer}
+  .hamburger{display:none;background:none;border:none;color:#fff;font-size:26px;cursor:pointer;
+    position:absolute;right:18px;top:7px}
+
+  /* ===== HERO ===== */
+  .hero{display:grid;grid-template-columns:1fr 320px;gap:28px;padding:32px 0 10px}
+  .feature{position:relative;border-radius:var(--radius);overflow:hidden;box-shadow:var(--shadow);min-height:430px}
+  .feature img{position:absolute;inset:0;height:100%}
+  .feature .overlay{position:absolute;inset:0;background:linear-gradient(180deg,rgba(0,0,0,0) 30%,rgba(0,0,0,.85) 100%)}
+  .feature .content{position:absolute;left:0;right:0;bottom:0;padding:28px}
+  .tag{display:inline-block;background:var(--brand);color:#fff;font-size:11px;font-weight:700;
+    letter-spacing:.08em;text-transform:uppercase;padding:5px 10px;border-radius:6px;margin-bottom:12px}
+  .feature h1{color:#fff;font-size:27px;line-height:1.25;font-weight:800;max-width:92%}
+  .feature .meta{color:#d6d9de;font-size:13px;margin-top:10px}
+
+  .side{display:flex;flex-direction:column}
+  .tabs{display:flex;gap:6px;border-bottom:2px solid var(--line);margin-bottom:12px}
+  .tabs button{background:none;border:none;font:inherit;font-weight:700;font-size:14px;color:var(--muted);
+    padding:8px 4px;cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-2px}
+  .tabs button.active{color:var(--brand);border-color:var(--brand)}
+  .mini{display:flex;gap:12px;padding:11px 0;border-bottom:1px solid var(--line)}
+  .mini .thumb{flex:0 0 78px;height:58px;border-radius:9px;overflow:hidden}
+  .mini h4{font-size:14px;font-weight:600;line-height:1.35}
+  .mini .meta{color:var(--muted);font-size:11.5px;margin-top:5px;text-transform:uppercase;letter-spacing:.04em}
+
+  .sec-head{display:flex;align-items:center;gap:10px;margin:38px 0 18px}
+  .sec-head::before{content:"";width:5px;height:22px;background:var(--brand);border-radius:3px}
+  .sec-head h2{font-size:20px;font-weight:800;letter-spacing:-.3px}
+  .sec-head .line{flex:1;height:1px;background:var(--line)}
+  .sec-head a{color:var(--brand);font-weight:700;font-size:13px}
+
+  .grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:24px}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);overflow:hidden;
+    box-shadow:var(--shadow);transition:transform .15s,box-shadow .15s}
+  .card:hover{transform:translateY(-4px)}
+  .card .ph{height:185px;overflow:hidden}
+  .card .body{padding:16px 18px 20px}
+  .card .kicker{color:var(--brand);font-size:11.5px;font-weight:700;text-transform:uppercase;letter-spacing:.06em}
+  .card h3{font-size:17px;font-weight:700;line-height:1.35;margin:8px 0 10px}
+  .card .meta{color:var(--muted);font-size:12.5px;display:flex;justify-content:space-between;align-items:center}
+
+  .ad-strip{margin:40px 0;height:120px;border:1px dashed var(--line);border-radius:var(--radius);
+    display:flex;align-items:center;justify-content:center;color:var(--muted);font-size:12px;
+    letter-spacing:.12em;background:var(--bg-alt)}
+
+  .news{margin:46px 0;background:linear-gradient(135deg,var(--ink),#2a2f3a);border-radius:18px;
+    padding:36px 38px;display:flex;align-items:center;justify-content:space-between;gap:26px;flex-wrap:wrap}
+  [data-theme="dark"] .news{background:linear-gradient(135deg,#1c1f26,#111418);border:1px solid var(--line)}
+  .news h3{color:#fff;font-size:22px;font-weight:800}
+  .news p{color:#c7cbd2;font-size:14px;margin-top:6px;max-width:440px}
+  .news form{display:flex;gap:10px}
+  .news input{padding:13px 16px;border-radius:10px;border:none;font-size:14px;min-width:230px}
+  .news button{background:var(--brand);color:#fff;border:none;padding:13px 24px;border-radius:10px;font-weight:700;font-size:14px;cursor:pointer}
+
+  footer{background:var(--rail);color:#aeb4bd;margin-top:46px;padding:44px 0 26px}
+  footer .cols{display:grid;grid-template-columns:2fr 1fr 1fr 1fr;gap:30px}
+  footer h4{color:#fff;font-size:14px;margin-bottom:14px;text-transform:uppercase;letter-spacing:.05em}
+  footer a{display:block;color:#aeb4bd;font-size:13.5px;padding:5px 0}
+  footer a:hover{color:#fff}
+  footer .brand .status{font-size:28px;font-weight:800;color:#fff}
+  footer .brand .a{color:var(--brand)}
+  .footer-logo{height:58px;width:auto;display:inline-block}
+  footer .copy{border-top:1px solid #262a31;margin-top:30px;padding-top:18px;font-size:12.5px;color:#7f8690;text-align:center}
+
+  .note{background:var(--bg-alt);border-left:4px solid var(--brand);padding:13px 18px;margin:6px 0;
+    font-size:13px;color:var(--muted);border-radius:0 8px 8px 0}
+
+  /* ===== ANIMATIONS / DYNAMICS ===== */
+  .feature img{transition:transform 6s ease}
+  .feature:hover img{transform:scale(1.07)}
+  nav.main a::after{content:"";position:absolute;left:14px;right:14px;bottom:5px;height:2px;
+    background:#fff;transform:scaleX(0);transform-origin:left;transition:transform .25s ease}
+  nav.main a{position:relative}
+  nav.main a:hover::after{transform:scaleX(1)}
+  .card .ph img{transition:transform .5s ease}
+  .card:hover .ph img{transform:scale(1.06)}
+  /* scroll reveal */
+  .reveal{opacity:0;transform:translateY(26px);transition:opacity .6s ease,transform .6s ease}
+  .reveal.in{opacity:1;transform:none}
+  @media(prefers-reduced-motion:reduce){
+    .reveal{opacity:1;transform:none;transition:none}
+    .ticker .track{animation:none}
+    .feature img,.card .ph img{transition:none}
+  }
+
+  /* ===== MOBILE (reworked) ===== */
+  @media(max-width:860px){
+    :root{--rail-w:0px}
+    .edge{display:none}            /* tuck edge tabs away on mobile */
+    .page{margin:0}
+    /* compact mobile top strip: date left, social right */
+    .mtop{display:flex !important;justify-content:space-between;align-items:center;
+      background:var(--rail);color:#cfd3da;font-size:11.5px;padding:7px 14px;letter-spacing:.06em}
+    .mtop .ms{display:flex;gap:14px;align-items:center}
+    .mtop a{color:#cfd3da}
+    .brand-row{padding:10px 16px;gap:12px}
+    .logo-img{height:44px}
+    .logo-fallback .status{font-size:28px}
+    .searchbox{display:none}
+    .subscribe{padding:9px 16px;font-size:13px}
+    .ticker{height:36px}
+    .ticker .track a{font-size:12.5px;padding:0 18px}
+    nav.main .bar{justify-content:flex-start;height:48px}
+    .hamburger{display:block}
+    nav.main .links{position:fixed;top:0;right:-100%;width:74%;max-width:320px;height:100vh;
+      background:var(--brand);flex-direction:column;align-items:stretch;gap:0;padding:64px 0 0;
+      transition:right .28s ease;box-shadow:-8px 0 30px rgba(0,0,0,.3);overflow-y:auto;display:flex}
+    nav.main .links.open{right:0}
+    nav.main .links a{padding:15px 22px;border-radius:0;font-size:16px;border-bottom:1px solid rgba(255,255,255,.15)}
+    nav.main .search{display:none}
+    .navscrim{position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:39;display:none}
+    .navscrim.show{display:block}
+    .hero{grid-template-columns:1fr;gap:20px;padding:20px 0 4px}
+    .feature{min-height:300px}
+    .feature h1{font-size:21px;max-width:100%}
+    .feature .content{padding:20px}
+    .grid3{grid-template-columns:1fr;gap:18px}
+    .card .ph{height:200px}
+    .news{padding:26px 22px}
+    .news form{flex-direction:column;width:100%}
+    .news input{min-width:0;width:100%}
+    .news button{width:100%}
+    footer .cols{grid-template-columns:1fr 1fr;gap:24px}
+    .wrap{padding:0 16px}
+  }
+  .mtop{display:none}
+  @media(max-width:420px){
+    footer .cols{grid-template-columns:1fr}
+    .feature h1{font-size:19px}
+  }
+</style>
+</head>
+<body>
+
+  <!-- ===== Hover-reveal edge tabs (float over page) ===== -->
+  <aside class="edge left">
+    <div class="panel"><span class="vdate">Thursday · June 4, 2026</span></div>
+    <div class="grip">Date</div>
+  </aside>
+  <aside class="edge right">
+    <div class="panel">
+      <button class="toggle" id="themeToggle" title="Toggle theme" onclick="toggleTheme()"><span id="themeIcon">🌙</span></button>
+      <a class="link" href="#">Facebook</a>
+      <a class="link" href="#">Twitter / X</a>
+      <a class="link" href="#">About</a>
+      <a class="link" href="#">Contact</a>
+    </div>
+    <div class="grip">Follow</div>
+  </aside>
+
+  <div class="page">
+
+    <!-- Mobile-only compact top strip -->
+    <div class="mtop">
+      <span>Thu · Jun 4, 2026</span>
+      <span class="ms">
+        <a href="#">FB</a><a href="#">TW</a><a href="#">Contact</a>
+        <a href="#" onclick="toggleTheme();return false" id="mThemeIcon">🌙</a>
+      </span>
+    </div>
+
+    <!-- Sticky top: logo bar + ticker + menu all lock together -->
+    <div class="topbar-sticky">
+    <!-- Compact professional header: logo left, actions right -->
+    <header class="site-header">
+      <div class="brand-row">
+        <a href="#" aria-label="The Status Online home" style="display:flex;align-items:center">
+          <img src="logo.png" alt="The Status Online" class="logo-img logo-light">
+          <img src="dark_logo.png" alt="The Status Online" class="logo-img logo-dark">
+        </a>
+        <div class="header-actions">
+          <label class="searchbox"><span>🔍</span><input type="text" placeholder="Search stories…"></label>
+          <button class="iconbtn" id="themeBtn" title="Toggle dark / light mode" onclick="toggleTheme()"><span id="themeIconHdr">🌙</span></button>
+          <button class="subscribe">Subscribe</button>
+        </div>
+      </div>
+    </header>
+
+    <!-- Breaking-news ticker -->
+    <div class="ticker">
+      <span class="label">Breaking</span>
+      <div class="ticker-vp">
+        <div class="track">
+          <a href="#">Oyo lawmakers reject negotiations with kidnappers</a>
+          <a href="#">Gunmen abduct ex-power minister's sister</a>
+          <a href="#">PDP grants Jonathan waiver to contest 2027</a>
+          <a href="#">Obasa reaffirms push for state police</a>
+          <!-- duplicate set for seamless loop -->
+          <a href="#">Oyo lawmakers reject negotiations with kidnappers</a>
+          <a href="#">Gunmen abduct ex-power minister's sister</a>
+          <a href="#">PDP grants Jonathan waiver to contest 2027</a>
+          <a href="#">Obasa reaffirms push for state police</a>
+        </div>
+      </div>
+    </div>
+
+    <!-- Primary nav -->
+    <nav class="main">
+      <div class="bar">
+        <div class="links" id="navLinks">
+          <a href="#" class="active">Home</a>
+          <a href="#">News</a><a href="#">Politics</a><a href="#">Entertainment</a>
+          <a href="#">Brand</a><a href="#">Society</a><a href="#">Metro</a>
+          <a href="#">Faith</a><a href="#">Opinion</a>
+        </div>
+        <span class="search">🔍</span>
+        <button class="hamburger" id="burger" aria-label="Menu" onclick="toggleMenu()">☰</button>
+      </div>
+    </nav>
+    </div><!-- /topbar-sticky -->
+    <div class="navscrim" id="scrim" onclick="toggleMenu()"></div>
+
+    <main class="wrap">
+
+      <section class="hero">
+        <article class="feature">
+          <img src="https://images.unsplash.com/photo-1529107386315-e1a2ed48a620?w=1100&q=80" alt="Lead story" />
+          <div class="overlay"></div>
+          <div class="content">
+            <span class="tag">Featured</span>
+            <h1>Oyo Lawmakers Reject Negotiations With Kidnappers of School Teachers and Students</h1>
+            <div class="meta">Politics · June 3, 2026 · 4 min read</div>
+          </div>
+        </article>
+        <aside class="side">
+          <div class="tabs"><button class="active">Latest</button><button>Popular</button></div>
+          <a class="mini"><div class="thumb"><img src="https://images.unsplash.com/photo-1556761175-5973dc0f32e7?w=200&q=80"></div><div><h4>Police Interrogate, May Charge FCT Minister's Spokesman</h4><div class="meta">Jun 3</div></div></a>
+          <a class="mini"><div class="thumb"><img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=200&q=80"></div><div><h4>Gunmen Abduct Ex-Power Minister, Bayo Adelabu's Sister</h4><div class="meta">Jun 3</div></div></a>
+          <a class="mini"><div class="thumb"><img src="https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=200&q=80"></div><div><h4>Kemi Olokode-Ayelabola Congratulates Tinubu on APC Win</h4><div class="meta">Jun 2</div></div></a>
+          <a class="mini"><div class="thumb"><img src="https://images.unsplash.com/photo-1551836022-deb4988cc6c0?w=200&q=80"></div><div><h4>Obasa Reaffirms Push for State Police Amid NUT Protest</h4><div class="meta">Jun 2</div></div></a>
+        </aside>
+      </section>
+
+      <p class="note">Redesign note: the date sits on the left rail and social/contact on the right rail, so the logo keeps the prime top spot and the menu sits right beneath it.</p>
+
+      <div class="sec-head"><h2>News</h2><span class="line"></span><a href="#">View all →</a></div>
+      <div class="grid3">
+        <article class="card"><div class="ph"><img src="https://images.unsplash.com/photo-1495020689067-958852a7765e?w=700&q=80"></div><div class="body"><span class="kicker">Regular</span><h3>Gunmen Abduct Ex-Power Minister Bayo Adelabu's Relative</h3><div class="meta"><span>Jun 3, 2026</span><span>🔖</span></div></div></article>
+        <article class="card"><div class="ph"><img src="https://images.unsplash.com/photo-1431540015161-0bf868a2d407?w=700&q=80"></div><div class="body"><span class="kicker">Regular</span><h3>Obasa Reaffirms Push for State Police Amid NUT Protest</h3><div class="meta"><span>Jun 2, 2026</span><span>🔖</span></div></div></article>
+        <article class="card"><div class="ph"><img src="https://images.unsplash.com/photo-1450101499163-c8848c66ca85?w=700&q=80"></div><div class="body"><span class="kicker">Regular</span><h3>Political Transitions Key Driver of Rising Wave of Insecurity</h3><div class="meta"><span>Jun 2, 2026</span><span>🔖</span></div></div></article>
+      </div>
+
+      <div class="sec-head"><h2>Politics</h2><span class="line"></span><a href="#">View all →</a></div>
+      <div class="grid3">
+        <article class="card"><div class="ph"><img src="https://images.unsplash.com/photo-1541872705-1f73c6400ec9?w=700&q=80"></div><div class="body"><span class="kicker">Regular</span><h3>PDP Faction Grants Ex-President Jonathan Waiver To Contest 2027</h3><div class="meta"><span>May 18, 2026</span><span>🔖</span></div></div></article>
+        <article class="card"><div class="ph"><img src="https://images.unsplash.com/photo-1529107386315-e1a2ed48a620?w=700&q=80"></div><div class="body"><span class="kicker">Regular</span><h3>Why Ex-Gov Gbenga Daniel Pulled Out of Second Term Race</h3><div class="meta"><span>May 17, 2026</span><span>🔖</span></div></div></article>
+        <article class="card"><div class="ph"><img src="https://images.unsplash.com/photo-1517048676732-d65bc937f952?w=700&q=80"></div><div class="body"><span class="kicker">Regular</span><h3>Tinubu, Obi Can't Retain Number of Votes They Got in 2023</h3><div class="meta"><span>May 6, 2026</span><span>🔖</span></div></div></article>
+      </div>
+
+      <div class="ad-strip">SINGLE SPONSORED SLOT &nbsp;·&nbsp; lazy-loaded, fixed height (no layout shift)</div>
+
+      <div class="sec-head"><h2>Entertainment</h2><span class="line"></span><a href="#">View all →</a></div>
+      <div class="grid3">
+        <article class="card"><div class="ph"><img src="https://images.unsplash.com/photo-1492684223066-81342ee5ff30?w=700&q=80"></div><div class="body"><span class="kicker">Regular</span><h3>Prolific Director Olawale Adebayo Marks Birthday, Vows to Raise the Bar</h3><div class="meta"><span>May 2, 2026</span><span>🔖</span></div></div></article>
+        <article class="card"><div class="ph"><img src="https://images.unsplash.com/photo-1583125311469-91bbe7e1c5e8?w=700&q=80"></div><div class="body"><span class="kicker">Regular</span><h3>Nollywood Celebrity Couple Lateef and Bimpe Adedimeji Celebrate</h3><div class="meta"><span>May 1, 2026</span><span>🔖</span></div></div></article>
+        <article class="card"><div class="ph"><img src="https://images.unsplash.com/photo-1516975080664-ed2fc6a32937?w=700&q=80"></div><div class="body"><span class="kicker">Regular</span><h3>British-Sierra Leonean Ejatu Shaw Features on Global Campaign</h3><div class="meta"><span>Apr 25, 2026</span><span>🔖</span></div></div></article>
+      </div>
+
+      <section class="news">
+        <div>
+          <h3>Never miss a headline</h3>
+          <p>Get The Status Online's top stories delivered to your inbox every morning. Free, no spam.</p>
+        </div>
+        <form onsubmit="alert('Demo only — newsletter signup');return false">
+          <input type="email" placeholder="Your email address" required />
+          <button type="submit">Subscribe</button>
+        </form>
+      </section>
+
+    </main>
+
+    <footer>
+      <div class="wrap">
+        <div class="cols">
+          <div class="brand">
+            <img src="dark_logo.png" alt="The Status Online" class="footer-logo"
+                 onerror="this.style.display='none';document.getElementById('footLogoFallback').style.display='inline-block'">
+            <div class="status" id="footLogoFallback" style="display:none">ST<span class="a">A</span>TUS <span style="font-size:14px;font-style:italic;color:#aeb4bd">Online</span></div>
+            <p style="margin-top:14px;font-size:13.5px;max-width:320px">Credible news, politics, and entertainment from Nigeria and beyond — reported with clarity and speed.</p>
+          </div>
+          <div><h4>Sections</h4><a href="#">News</a><a href="#">Politics</a><a href="#">Entertainment</a><a href="#">Metro</a></div>
+          <div><h4>Company</h4><a href="#">About</a><a href="#">Contact</a><a href="#">Advertise</a><a href="#">Privacy</a></div>
+          <div><h4>Follow</h4><a href="#">Facebook</a><a href="#">Twitter / X</a><a href="#">Instagram</a><a href="#">WhatsApp</a></div>
+        </div>
+        <div class="copy">© 2026 The Status Online. Redesign concept prepared for review.</div>
+      </div>
+    </footer>
+  </div>
+
+<script>
+  function toggleTheme(){
+    const root=document.documentElement;
+    const dark=root.getAttribute('data-theme')==='dark';
+    root.setAttribute('data-theme',dark?'light':'dark');
+    const icon=dark?'🌙':'☀️';
+    ['themeIcon','themeIconHdr','mThemeIcon'].forEach(id=>{
+      const el=document.getElementById(id); if(el) el.textContent=icon;
+    });
+  }
+  function toggleMenu(){
+    document.getElementById('navLinks').classList.toggle('open');
+    document.getElementById('scrim').classList.toggle('show');
+  }
+  if(window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches){ toggleTheme(); }
+
+  // Scroll-reveal: fade/slide elements in as they enter the viewport
+  (function(){
+    const els=document.querySelectorAll('.sec-head, .grid3, .ad-strip, .news, .hero');
+    els.forEach(e=>e.classList.add('reveal'));
+    if(!('IntersectionObserver' in window)){els.forEach(e=>e.classList.add('in'));return;}
+    const io=new IntersectionObserver((entries)=>{
+      entries.forEach(en=>{ if(en.isIntersecting){ en.target.classList.add('in'); io.unobserve(en.target);} });
+    },{threshold:.12});
+    els.forEach(e=>io.observe(e));
+  })();
+</script>
+</body>
+</html>
